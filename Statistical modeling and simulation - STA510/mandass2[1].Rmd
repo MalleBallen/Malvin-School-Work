@@ -1,0 +1,258 @@
+---
+title: "mandass2"
+author: "Malvin"
+date: "2022-09-28"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+editor_options:
+  markdown:
+    wrap: 72
+---
+
+**Problem 1**\
+*a)*\
+Because $|x|$ is $-x$ fox $x<0$ and $x$ for $x>0$ we det the cumulative
+distribution for $f(x)$ is:
+
+$$ F(x)=\int_{x=-\infty}^x\frac12 e^{x}dx=\frac12e^x, \mbox{for} \ x\in \langle-\infty,0] $$
+$$ F(x)=\int_{x=-\infty}^0\frac12 e^{x}dx +\int_0^x\frac12e^{-x}dx=1-\frac12e^{-x},\mbox{for} \ x\in[0,\infty \rangle. $$
+
+To get the cumulative inverse, we have to set:
+
+$$ F(x)=\frac12e^x=u, when \ x<0. $$ This is in
+$u\in \langle 0,\frac12\rangle$. We then get: $$ e^x=2u$$
+$$ F^{-1}(u)=ln(2u),u\in\langle0,\frac12\rangle $$\
+\
+And for positive x $$ F(x)=1-\frac12e^{-x}=u, \mbox{when} \ x>0 $$ This
+is in $u\in\langle\frac12,1\rangle$. We then get: $$ 2-2u=e^{-x} $$
+$$ F^{-1}(u)=-ln(2-2u), \ u\in\langle\frac12,1\rangle $$.
+
+This means that the cumulative inverse can be written as:\
+$$ F^{-1}(u) = \left\{ \begin{array}{}
+         ln(2u), & \mbox{if $0<u<\frac12 $}\\
+        -ln(2-2u), & \mbox{if $\frac12<u<1$}.\end{array} \right. $$\
+\
+*b)*\
+
+```{r}
+rm(list=ls())
+start1 <- Sys.time() #Noting the time when we start the function
+simfun <- function(n){
+  u <- runif(n)
+  dist <- c(log(2*(u[u<0.5])),-log(2-2*(u[u>0.5])))#Creating a vector with the different inverse functions for F. With u we get the distribution we want. All u-values are used, and only in the right function.
+}
+hist(simfun(100000), main="Histogram over simulation",breaks=250,probability=TRUE, density=10,xlim=c(-5,5), xlab="X-values")#Doing the simulation with 1000 values and plotting in a histogram. 
+stop1 <- Sys.time() #Noting the time when we stop the function
+```
+
+\
+\
+*c)*\
+
+```{r}
+start2 <- Sys.time()
+simalt <- function(n){
+  y <- sample(c(-1,1),size=n, replace=TRUE)#Makes values of -1 and 1, which has 0.5 probability of each
+  g <- rexp(n,1) #Exponentially distributed with rate 1
+  dist2 <- y*g #Using information in problem to make the dist
+}
+hist(simalt(100000), main="Histogram over simulation",probability=TRUE,breaks=250, density=10,xlim=c(-5,5), xlab="X-values")
+stop2 <- Sys.time()
+time1 <- stop1-start1 #Substracting to find the difference in time
+time2 <- stop2-start2
+
+print(paste0("The first function uses ", time1, " and the second one uses ", time2))
+```
+
+The time it uses to run is very similar, and I can't get an answer on
+which is faster. Therefore I would use the second one, because it is
+simpler to use if we first have to compute the inverse of the cumulative
+distribution on the first one.\
+\
+*d)*\
+If we try with this normal distribution, we first have that the function
+$g(x)$ is then (Normal distributed with $\mu=0\ and\ var(X)=\sigma^2$:
+$$ g(x)=\frac1{\sigma \sqrt{2\pi}}e^{-\frac{(x-\mu)^2}{2\sigma^2}}=\frac{e^{-\frac{x^2}{2\sigma^2}}}{\sigma\sqrt{2\pi}} $$\
+We then see if we divide $f(x)$ on $g(x)$, we get:
+$$ \frac{f(x)}{g(x)}=\frac{\frac12e^{-|x|}}{\frac{e^{-\frac{x^2}{2\sigma^2}}}{\sigma\sqrt{2\pi}}}=\sigma\sqrt{2\pi}\frac12e^{-|x|-(-\frac{x^2}{2\sigma^2})}=\sigma\sqrt{2\pi}\frac12e^{-|x|+\frac{x^2}{2\sigma^2}} $$\
+Which we see go to infinity when $x=\pm\infty$, because the power of e
+becomes increasingly larger with x after a certain point. Therefore we
+can't find a $c$ that can fulfill $\frac{f(x)}{g(x)}\le c$\
+\
+\
+**Problem 2**\
+*a)*\
+The values we use for $\lambda_{max}$ is when it is the largest. Since $\lambda_1$ is a function of cos and a constant, we know that it is the largest when $t=0$, which gives:
+\[ \lambda_{1,max}=1+\frac12cos0=\frac32. \]
+\
+For the other function we get that the max lambdavalue depends on the stoptime. We then get:
+
+\[ \lambda_{2,max}=\frac{1+10}6=\frac{11}6,\ for\ t>10 \]
+
+\[ \lambda_{2,max}=\frac{1+t}6,\ for\ t[0,10] \].
+
+
+```{r}
+NHPPfun1 <- function(stoptime){
+  lambdamax <- 3/2 
+  expnumber <- lambdamax*stoptime  # Expected events for lambdamax in time given
+  n <- 3*expnumber  # To be sure we simulate more than expected values
+  tbetween <- rexp(n,lambdamax) # Times between arrivals
+  if(tbetween[1]>stoptime){ # If stoptime is less than the first time for the even(no events in time interval), we give an empty vector
+    NHPP <- c()
+  }
+  else{
+  cumtimes <- cumsum(tbetween)   # Arrival times
+  cumtimes <- cumtimes[cumtimes<=stoptime] # Only values less than stoptime
+  nevents <- length(cumtimes) # Count the number of events
+  u <- runif(nevents) # Uniformly distributed values
+  NHPP <- c()
+  
+  for(i in 1:nevents){ # For all the values we try the function and put it in the new vector NHPP
+    if(u[i]<=(1+1/2*cos(cumtimes[i]*pi/5))/lambdamax){
+       NHPP <- c(NHPP,cumtimes[i])
+      }
+    }
+  }
+  return(NHPP)
+}
+
+NHPPfun2 <- function(stoptime){
+  if(stoptime>10){ # If t is larger than 10, we get lambdavalue for 10, otherwise we have to use the t to find it.
+    lambdamax <- 11/6
+  }
+  else{
+    lambdamax <- (1+stoptime)/6
+  }
+  expnumber <- lambdamax*stoptime  # Same approach as for NHPPfun1, until for loop.
+  n <- 3*expnumber  
+  tbetween <- rexp(n,lambdamax) 
+  if(tbetween[1]>stoptime){
+    NHPP <- c()
+  }
+  else{
+  cumtimes <- cumsum(tbetween)   
+  cumtimes <- cumtimes[cumtimes<=stoptime] 
+  nevents <- length(cumtimes)
+  u <- runif(nevents)
+  NHPP <- c()
+  for(i in 1:nevents){
+    if(u[i]<=10){ # The function is different before and after t=10. Therefore we take the function with t before
+      if(u[i]<=((1+cumtimes[i]))/(6*lambdamax)){
+         NHPP <- c(NHPP,cumtimes[i])
+      }
+    }
+    else
+         NHPP <- c(NHPP,cumtimes[i])
+    
+      
+    }
+  }
+  return(NHPP)
+}
+
+k <- 0
+l <- 0
+for(i in 1:100){ # Running the functions 100 times and find the mean of the length for both of them
+k <- k+length(NHPPfun1(10))
+l <- l+length(NHPPfun2(10))
+}
+print(k/100)
+print(l/100)
+```
+
+We then get that the expected values are about 10, which in this case is
+what it should be.\
+\
+*b)*\
+
+```{r}
+k <- 0
+l <- 0
+nsim <- 1000
+for(i in 1:nsim){ # Running the functions 1000 times and find the mean of the length for both of them
+k <- k+length(NHPPfun1(5))
+l <- l+length(NHPPfun2(5))
+}
+print(paste0("Estimate of E(N_1)= ", k/nsim))
+print(paste0("Estimate of E(N_2)= ", l/nsim))
+
+T3 <- matrix(nrow=2,ncol=1000)
+for(i in 1:1000){
+T3[1,i] <- NHPPfun1(30)[3]
+T3[2,i] <- NHPPfun2(30)[3]
+}
+
+plot
+hist(T3[1,1:100], col="#1B98E080",density=25, breaks=20,xlim=c(0,8), probability=TRUE, main="Histogram of 3")
+hist(T3[2,1:100],add=TRUE, col="#1B98E00D", breaks=20, probability=TRUE)
+
+```
+\
+\
+*d)*\
+```{r}
+NHPPfun3 <- function(b){
+  t <- 0
+  x <- c()
+  while(t<b){
+    t <- sqrt(t^2+20*rexp(1,1)+20*t+100)-10
+    if(t<b){
+      x <- c(x,t)
+    }
+  }
+  return(x)
+}
+y <- c()
+for(i in 1:1000){
+   y <- c(y,length(NHPPfun3(20)))
+}
+z <- rpois(1000,40)
+hist(y,probability=T, breaks=25, col=rgb(1,0.97,0.8,0.5))
+hist(z,probability=T, breaks=25, col=rgb(0.5,0.5,0.9,0.5),add=T)
+
+```
+
+\
+\
+\
+**Problem 3**\
+*a)*
+
+```{r}
+markov <- function(mu, fi, sigma,t){# Function which takes in the four different variables.
+  k <- 1 
+  x <- vector(length=t)
+  x[1] <- rnorm(1,mu,sigma^2) # First X is normal distributed N(mu,sigma^2)
+  while(k<t){
+    x[k+1] <- mu+fi*(x[k]-mu)+(rnorm(1,0,(1-fi^2)*sigma^2)) # Putting in the function for X
+    k <- k+1
+  }
+  return(x)
+}
+```
+
+\
+\
+*b)*\
+
+```{r}
+nsim <- 1000
+M1<-M2 <- matrix(nrow=3,ncol=nsim)# Making matrices with 3 rows and 500 columns 
+for(i in 1:3){ 
+  for(j in 1:nsim){
+  M1[i,j] <- sum(markov(0,-0.8+0.8*(i-1),1,1000))/1000 # Get three columns with fi-values given in problem
+  M2[i,j] <- sum((markov(0,-0.8+0.8*(i-1),1,1000))^2)/1000
+  }
+}
+print(paste0("The mean of M1 with fi-values -0.8,0, and 0.8 respectively is ", mean(M1[1,])," ",mean(M1[2,])," and ",mean(M1[3,])))
+print(paste0("The variance of M1 with fi-values -0.8,0, and 0.8 respectively is ", var(M1[1,])," ",var(M1[2,])," and ",var(M1[3,])))
+
+print(paste0("The mean of M2 with fi-values -0.8,0, and 0.8 respectively is ", mean(M2[1,])," ",mean(M2[2,])," and ",mean(M2[3,])))
+print(paste0("The variance of M2 with fi-values -0.8,0, and 0.8 respectively is ", var(M2[1,])," ",var(M2[2,])," and ",var(M2[3,])))
+```
+
+
+

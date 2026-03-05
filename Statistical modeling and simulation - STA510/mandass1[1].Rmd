@@ -1,0 +1,272 @@
+---
+title: "Mandatory assignment 1"
+author: "Malvin"
+date: "2022-09-14"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+**Problem 1** \
+*a)* \
+Firstly, if it is a proper probability density function, the function needs to satisfy:
+
+\[ f(x)\ge 0, \in \mathbb{R} \]
+
+In this case this is true.\
+Secondly the total area under graph of the function must equal to $1$. We check this by:
+
+\[ \int_{-\infty}^{\infty} f(x)dx=0+\int_0^2f(x)dx+0=\int_0^2 \frac{x}{2}dx=\frac{x^2}{4} \bigg|_0^2=1. \] Which means that it is a proper probability density function.  
+
+We can find the mean and variance respectively by solving:
+
+\[ E(X)=\int_{-\infty}^{\infty}x\cdot f(x)dx=\int_0^2 \frac{x^2}{2}dx=\frac{x^3}{6} \bigg|_0^2= \frac43. \]
+
+
+\[ Var(X)=E(X^2)-E^2(X)=\int_{-\infty}^{\infty}x^2\cdot f(x)dx-(\frac43)^2=\frac{x^4}8 \bigg|_0^2-\frac{16}9=\frac{2^4}8-\frac{16}9=\frac29. \]  
+
+We then find the last two equations:
+
+\[ E(\frac12(X+1))=E(\frac12X+\frac12)=\frac12\cdot E(X)+\frac12=\frac23+\frac12=\frac76. \]
+
+\[ E(X^3)=\int_0^2x^3\cdot f(x)dx=\frac{x^5}{10} \bigg|_0^2=\frac{16}5. \]  \
+\
+\
+
+*b)* \
+Cumulative distribution function $F(x)$ associated with $X$ is found by:
+
+\[ F(x)=\int_{-\infty}^{x}f(x)dx=\int_{0}^2f(x)dx=\int_{0}^x\frac{x}2dx=\frac{x^2}4. \]
+
+We then find:
+
+\[ P(X<1)=F(1)=\frac14. \]
+
+\[ P(0.5<X<1.5)=F(1.5)-F(0.5)=\frac{1.5^2}{4}-\frac{0.5^2}4=\frac12. \]
+
+And to find the inverse cumulative distribution we have to solve:
+
+\[ \frac{x^2}4=u \]
+
+\[ F^{-1}(u)=x=\pm\sqrt{4u}  \]\
+Since $x$ is between $0$ and $2$ it has to be positive. Therefore we get:
+\[ F^{-1}(u)=\sqrt{4u}. \]
+\
+\
+
+*c)*\
+We already have the inverse. 
+```{r}
+rm(list=ls())
+func <- function(n){
+  u <- runif(n) #Produce n uniformly distributed numbers.
+  x <- sqrt(4*u) #Using inverse function to produce n random numbers with density(1).
+  return(x)
+}
+sim <- func(10000) 
+hist(sim, probability=TRUE, density=10, xlab="X", main="Simulations by inverse and density function")
+
+f <- function(x){
+  f <- x/2
+  return(f)
+}
+vec <- seq(from = 0, to = 2, 0.01)
+curve(x/2, from=0, to=2, add=TRUE)
+```
+\
+Looks like the function and the density created are similar. \
+\
+\
+
+*d)*\
+We use uniform distribution in $[0,2]$. Therefore we use $g(x)=0.5$, so that we get a proper density function. We also find that $f(2)$ is the x that gives the highest value, which is $1$. We then get that:
+
+\[ \frac{f(t)}{g(t)}\le c \]
+\[ \frac{f(2)}{0.5}=c=2. \]
+
+We then find that:
+
+\[ u<\frac{f(y)}{c\cdot g(y)}=f(y). \]
+
+\
+\
+*e)*\
+```{r}
+funcar <- function(n){ #Creating a function with input n.
+  k <- 0
+  x <- vector(length=n)
+  while(k<n){ #Since we are throwing away a few of the loops, we use while to get n length on vector x
+    u <- runif(1)
+    y <- runif(1, min=0,max=2)
+    if (u<f(y)){ #Only accepting u < f(y)/(c*g(y))
+      k <- k +1 
+      x[k] <- y
+    }
+  }
+  return(x)
+}
+simar <- funcar(10000)
+hist(simar, probability=TRUE, density=10, xlab="X", main="Accept-reject method simulations and density of f(x)", breaks=25)
+curve(x/2, from=0, to=2, add=TRUE)
+```
+\
+\
+
+*f)*\
+We just use the same function with the accept-reject method to find this.
+```{r}
+print(paste0("The simulated mean is ", (mean(simar))))
+print(paste0("The simulated var is ", (var(simar))))
+p1 <- (sum(as.integer(simar<1)))/10000 #Makes all values less than 1 to 1, and everything else to 0. Therefore the sum equals total values under 1, and divided by 10000 we get the fraction.
+print(paste0("The simulated probability for less than 1 is ", p1))
+p2 <- ((sum(as.integer(simar<1.5))-(sum(as.integer(simar<0.5)))))/10000 #The same here for 1.5, only we take away for 0.5 as well.
+print(paste0("The simulated probability for between 0.5 and 1.5 is ", p2))
+```
+
+We see that all the values are almost the same as we calculated in a and b.\
+\
+\
+\
+
+
+
+**Problem 2**\
+*a)*\
+If we have that X is exponentially distributed with expectation $1$, we can find that:
+\[ E(X)=\beta=1. \]
+\[Var(X)=\beta^2=1. \]
+This gives:
+\[ f(x)=\frac 1{\beta}e^{-\frac x{\beta}}=e^{-x}, x\ge0. \]\
+\
+
+\[ E(A)=E(\Sigma_{i=1}^{n}x_i)=\Sigma_{i=1}^{n}E(x_i)=n. \]
+\[ Var(A)=Var(\Sigma_{i=1}^{n}x_i)=\Sigma_{i=1}^{n}Var(x_i)=n. \]\
+\
+\[ E(B)=E(\frac1n \Sigma_{i=1}^{n}x_i)=\frac1n \Sigma_{i=1}^{n}E(x_i)=1. \]
+\[ Var(B)=Var(\frac1n \Sigma_{i=1}^{n}x_i)=\frac1{n^2} \Sigma_{i=1}^{n}Var(x_i)=\frac1n. \]\
+\
+If we take the distribution C, we will see that when n becomes larger, we can assume it will become normally distributed. This is because of the central limit theorem, and applies to A, B and C. The mean and variance will look like this:
+
+\[ E(C)=E(\sqrt n(B-1))=E(\sqrt n (\frac 1n \Sigma_{i=1}^nx_i-1))= E(\frac {\sqrt{n}}n \Sigma_{i=1}^nx_i-\sqrt n)=\frac {\sqrt n}n \Sigma_{i=1}^nE(x_i)-\sqrt n=\sqrt n(1-1)=0. \]
+\[ Var(C)=Var(\sqrt n(B-1)=Var(\sqrt n (\frac 1n \Sigma_{i=1}^nx_i-1)=Var(\frac {\sqrt{n}}n \Sigma_{i=1}^nx_i-\sqrt n)= \frac n{n^2} \Sigma_{i=1}^nVar(x_i)=1. \]
+\
+\
+*b)*
+```{r}
+n <- 1000
+nA <- nB <- nC <- vector(length=n)
+for (i in 1:n){
+  
+  exp1 <- rexp(n) #Creating n random numbers with exponential density
+  sumn <- sum(exp1) #Summing all the numbers, because we use this in A, B and C.
+  nA[i] <- sumn
+  nB[i] <- sumn/n
+  nC[i] <- sqrt(n)*(sumn/n-1)
+
+}
+
+print(paste0("Mean and variance for A is: ", mean(nA), " and ", var(nA)))
+print(paste0("Mean and variance for B is: ", mean(nB), " and ", var(nB)))
+print(paste0("Mean and variance for C is: ", mean(nC), " and ", var(nC)))
+```
+\
+\
+*c)*
+```{r}
+n <- 10
+
+for (i in 1:n){
+  
+  exp2 <- rexp(n) #Creating n random numbers with exponential density
+  sumn2 <- sum(exp2) #Summing all the numbers, because we use this in A, B and C.
+
+}
+
+
+```
+\
+\
+\
+**Problem 3**\
+*a)*\
+Firstly, this is when $x>0$. To derive this I will use both accept-reject method, and the inverse. I need a function $g(x)$ that gives an easy c, and has a proper probability density function. For this $f(x)$ I choose:
+
+\[ g(x)=\frac12e^{-\frac x2}. \]
+
+To simulate this density, we use the inverse of the cdf.
+\[ G(x)=\int_0^x\frac12e^{-\frac x2}dx=-e^{-\frac x2}\bigg|_0^x=1-e^{-\frac x2}=u \]
+
+\[ \frac {-x}2=ln(1-u) \]
+\[ F^{-1}(u)=x=-2ln(1-u). \]
+\
+To find c we get:
+
+\[ \frac{f(t)}{g(t)}=\frac{\frac13e^{-x}+\frac13 e^{-\frac x2}}{\frac12e^{-\frac x2}}=\frac23(e^{-\frac x2}+1). \]
+
+This is at its largest when $x=0$, and we get:
+
+\[ \frac{f(0)}{g(0)}\le c=\frac43. \]
+\
+*b)*\
+To simulate we use R:
+
+```{r}
+simf <- function(n){ 
+  k <- 0
+  x <- vector(length=n)
+  while (k<n){ 
+    u1 <- runif(1)
+    y <- -2*log(1-u1) #Creating random numbers with density g(x)
+    u2 <- runif(1)
+      if(u2<(3/4)*(2/3)*(exp((-y/2)+1))) #Using the expression of if u<f(x)/(c*g(x)) we accept, or else we reject. 
+         k <- k+1
+         x[k] <- y
+            
+  }
+  return(x)
+}
+
+hist(simf(1000), probability=TRUE, density=10, breaks=25, main = "Hisogram of simulations, and curve of f(x)", xlab="X")
+curve((1/3*((exp(-x)+exp(-x/2)))),from =0, to=20, add=TRUE)
+```
+\
+Against the true density, it looks like the histogram is following it nicely.
+\
+\
+\
+**Problem 4**\
+*a)*
+```{r}
+source("lawn.R")
+
+x5 <- vector(length=100)
+for (i in 1:100){
+  
+  x5[i] <- sim.lawn(Etime=5, plot.trace= FALSE, plot.image=FALSE)
+  
+}
+hist(x5 ,main="Histogram of 100 results of Etime = 5.0")
+print(paste0("Mean of x is: ",mean(x5)))
+print(paste0("Median of x is ", median(x5)))
+print(paste0("Standard deviation of x is ", sqrt(var(x5))))
+```
+\
+*b)*\
+```{r}
+x1<-x10<-x100 <- vector(length=100)
+for (i in 1:100){
+  
+  x1[i] <- sim.lawn(Etime=1, plot.trace= FALSE, plot.image=FALSE)
+  x10[i] <- sim.lawn(Etime=10, plot.trace= FALSE, plot.image=FALSE)
+  x100[i] <- sim.lawn(Etime=100, plot.trace= FALSE, plot.image=FALSE)
+  
+}
+boxplot(x1,x5,x10,x100)
+quantile(x1,c(0.025,0.975))
+print(paste0("The mean of the Etime={1,5,10,100} respectively is: ", mean(x1),", ",mean(x5),", ", mean(x10)," and ", mean(x100)))
+print(paste0("The median of the Etime={1,5,10,100} respectively is: ", median(x1),", ",median(x5),", ", median(x10)," and ", median(x100)))
+print(paste0("The 0.05 of the Etime={1,5,10,100} respectively is: ", quantile(x1, 0.05),", ",quantile(x5,0.05),", ", quantile(x10,0.05)," and ", quantile(x100,0.05)))
+```
+Preferably I would use the Etime=100 for the finished product. This is because it averages the most pixels, even though the 0.05 quantile is a bit lower than Etime=10. 
+
+

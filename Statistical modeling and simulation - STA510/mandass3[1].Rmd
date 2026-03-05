@@ -1,0 +1,271 @@
+---
+title: "Mandatory assignment 3"
+author: "Malvin"
+date: "2022-10-13"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+**Problem 1**\
+*a)*\
+
+\[ A=\int_0^{\infty}e^{-x}\sqrt xdx= \int_0^{\infty}\sqrt xf(x) dx\] 
+Where $f(x)=e^{-x}$,so we suggest Monte Carlo estimator
+
+\[ \hat{A}=\frac1n \sum_{i=1}^n\sqrt {X_i}  \]
+
+Where $X$ is exponentially distributed with expected value $1$. 
+
+```{r}
+rm(list=ls())
+n <- 1000000
+x <- sqrt(rexp(n,1))
+mean(x)
+
+```
+\
+\
+*b)*\
+
+\[ B=\int_0^{10}e^{-x}\sqrt xdx= \int_0^{10}\sqrt xf(x)\frac1{10} dx\]
+Where $f(x)=e^{-x}$,so we suggest Monte Carlo estimator
+
+\[ \hat{B}=\frac1n \sum_{i=1}^nI(X_i<10)\sqrt X_i  \]
+
+Where $X$ is exponentially distributed with expected value $1$. 
+
+```{r}
+n <- 1000000
+x <- rexp(n,1)
+x <- x[x<10] #Select values that are lower than 10. Gets a smaller vector, so can't take mean. 
+sum(sqrt(x)/n)
+
+```
+\
+\
+*c)*\
+
+\[ C=\int_{-1}^1\sqrt{1+cos(x)}dx=(1-(-1))\int_{-1}^1g(x)\frac1{1-(-1)}=2E(g(x))=2\cdot \sum_{i=1}^n\sqrt{1+cos(X)} \]
+Where $X$ is uniformly distributed between -1 and 1.
+
+```{r}
+n <- 1000000
+x <- 2*sqrt(1+cos(runif(n,min=-1,max=1)))
+mean(x)
+```
+
+And for $D$
+
+\[ C=\int_{-1}^1\sqrt{1+sin(x)}dx=(1-(-1))\int_{-1}^1g(x)\frac1{1-(-1)}=2E(g(x))=2\cdot \sum_{i=1}^n\sqrt{1+sin(X)} \]
+Where $X$ is uniformly distributed between -1 and 1.
+
+```{r}
+n <- 1000000
+x <- 2*sqrt(1+sin(runif(n,min=-1,max=1)))
+mean(x)
+```
+\
+\
+*d)*\
+Gamma function with parameters $(\frac32, 1)$ is given as:
+
+\[ \frac1{1^{\frac32}\Gamma(\frac32)}x^{\frac32-1}e^{-\frac x1}=\frac{\sqrt xe^{-x}}{\frac12\Gamma(\frac12)}=\frac{2\sqrt x e^{-x}}{\sqrt \pi}. \]
+
+We then can get that:
+
+\[ A=\int_0^\infty e^{-x}\sqrt xdx=\frac{\sqrt \pi}{2}\int_0^\infty \frac{2\sqrt x e^{-x}}{\sqrt \pi}=\frac1n\sum_{i=1}^n\frac {\sqrt \pi} {2}=\frac{\sqrt \pi }{2}. \]
+
+This one is a constant, and will have zero variance. That means that it is a great estimator which will be accurate. 
+
+And for B:
+
+\[ B=\frac{\sqrt \pi}{2}\int_0^{10} \frac{2\sqrt x e^{-x}}{\sqrt \pi}=\frac1n\sum_{i=1}^nI(u<10)\frac {\sqrt \pi} {2} \]
+
+This one will be a good estimator that works well, because it doesn't have a lot of u>10 values. That makes it a good estimator based on the theory.
+\
+\
+*e)*\
+
+We first find the function for $\gamma (4,1/4)$.
+
+\[ \frac1{(\frac14)^{4}\Gamma(4)}x^{4-1}e^{-\frac {4x}1}=\frac{4^4}{3!}x^3e^{-4x}=\frac{128}{3}x^3e^{-4x}. \]
+
+We then get:
+
+\[ A=\int_0^\infty e^{-x}\sqrt x=\int_0^\infty \frac{3e^{3x}}{128x^{\frac52}}\frac{128}{3}x^{\frac12+\frac52}e^{-x-3x}=\sum_{i=1}^n\frac{3e^{3X_i}}{128X_i^{\frac52}}. \]
+
+Where $X_i$ is gamma distributed with parameters $4$ and $1/4$. 
+
+For B we get the same but with $I(x<10)$
+
+\[ B=\int_0^{10} e^{-x}\sqrt x=\int_0^{10} \frac{3e^{3x}}{32x^{\frac52}}\frac{32}{3}x^{\frac12+\frac52}e^{-x-3x}=\sum_{i=1}^nI(X<10)\frac{3e^{3X_i}}{32X_i^{\frac52}}. \]
+\
+\
+*f)*\
+I don't understand the part where it says it has to be monotonic, but I try either way. This function is not strictly increasing or decreasing on the integral, so therefore I would think it is not monotonic. 
+
+\[ C=\int_{-1}^1 \sqrt{1+cos(x)}. \]
+
+We then get that the estimator could be:
+
+\[ \hat C=\frac{b-a}{n}(\sum_{i=1}^{n/2}g(U_i)+\sum_{i=1}^{n/2}g(V_i) )=\frac2n(\sum_{i=1}^{n/2}\sqrt{1+cos(U_i)}+\sqrt{1+cos(V_i)}). \]
+
+Where $U$ is unif between $-1$ and $1$, and $V$ is $2-U$.I don't expect this one to work, because it has to be monotonic. \
+
+For the other one, which is monotonic in the integral:
+
+\[ D=\int_{-1}^1\sqrt{1+sin(x)} \]
+
+We get the same as for C, but with sin instead:
+
+\[ \hat D=\frac{b-a}{n}(\sum_{i=1}^{n/2}g(U_i)+\sum_{i=1}^{n/2}g(V_i) )=\frac2n(\sum_{i=1}^{n/2}\sqrt{1+sin(U_i)}+\sqrt{1+sin(V_i)}). \]
+
+This one I think will work well, with better variance. This is because if it is possible, one should use the antihetic estimator for a lower variance.
+\
+\
+*g)*\
+We try the functions in d,e and f:
+
+```{r}
+pi/2 #d i) estimator.
+
+n <- 10000000
+x <- (as.integer(rgamma(n,3/2,1)<10))*sqrt(pi)/2 #setting values
+#to 1 if the generated number is under 10, and 0 if over. Then 
+#multiplying by pi/2. 
+mean(x) #d ii) estimator.
+rgamma(1,3/2,1)
+
+x <- rgamma(n,4,scale=0.25) #Generating numbers from the dist.
+u <- 3*exp(3*x)/(128*x^(5/2)) #Putting them in the equation.
+mean(u) #e i) estimator.
+
+v <- x[x<10] #Selecting values lower than 10
+u <- 3*exp(3*x)/(128*x^(5/2))
+sum(u/n) #e ii) estimator.
+
+
+u <- runif(n/2,min=-1,max=1) 
+v <- -u #Creating the vectors of u and v which are correlated.
+2/n*sum(sqrt(1+cos(u))+sqrt(1+cos(v))) #f i) estimator
+
+2*sum(sqrt(1+sin(u))+sqrt(1+sin(v)))/n #f ii) estimator
+
+
+```
+I don't get the correct answers in e and f, and I don't know why. 
+
+
+
+**Problem 2**\
+*a)*\
+It is binominal distribution because:
+  - It is an amount of success/not success in n experiments
+  - The experiments are independent
+  - The probability for each experiment is equal.
+
+The parameters are n experiments and the probability for success in each is the probability that $\sum_{i=1}^d|u_i|\le c$. Since we have it defined that a point is in the cross-polytype if $P<c$, and the sum we have could be seen as a point in d-dimentional space, we can use the probability for the point to be in this space as probability for success. This probability is given as the portion $V_c$ of the total area that is possible. Total area possible is given as $(2c)^2$ in two dimensions, $(2c)^3$ in three dimensions, so I assume that the total area is given as $(2c)^d$ for d dimensions. We then get that the probability of each experiment to be a success is:
+
+\[ \frac{V_c}{(2c)^d}=V_c(2c)^{-d}. \]
+\
+\
+*b)*\
+To find the relative standard error we find first:
+
+\[ SD(\hat V_1)=\sqrt{Var(\hat V_1)}=\sqrt{Var(\frac{2^d}{n}X})=\frac{2^d}{n}\sqrt{Var(X)}=\frac{2^d}{n}\sqrt{n\frac{2^d\cdot2^{-d}}{d!}(1-\frac{2^d\cdot 2^{-d}}{d!})}=\frac{2^d}{\sqrt n}\sqrt{(1-\frac1{d!})} \]
+
+Then we find the fraction:
+
+\[ \frac{SD(\hat V_1)}{V_1}=\frac{\frac{2^d}{\sqrt n}\sqrt{(1-\frac1{d!})}}{\frac{2^d}{d!}}=\sqrt{\frac1n}\sqrt{d!(1-\frac{1}{d!})}=\frac{\sqrt {d!-1}}{\sqrt n}<r \]
+This gives the number of simulations needed to make the relative standard error smaller than some constant r to be:
+
+\[ n>\frac{d!-1}{r^2}. \]
+
+This means that the number of simulations has to increase when the number of dimensions increases to maintain the same value of relative standard error. 
+\
+\
+*c)*\
+```{r}
+monte <- function(d,c,n){
+  
+  u <- matrix(runif(d*n,min=-c,max=c),nrow=n) #Creating d*n uniformly distributed
+  #numbers over n rows. 
+  x <- rowSums(abs(u)) #Summing the rows to create a vector with only sum of u_j
+  v <- sum((2*c)^d*(sum(as.integer(x<=c))))/n #If sum is under c, we use monte 
+  #carlo estimator.
+  return(v)
+  
+}
+
+monte(2,1,1000000)
+monte(4,1,1000000)
+monte(8,1,1000000)
+```
+\
+\
+*d)*\
+```{r}
+x <- vector(length=10)
+for(i in 1:10){
+  
+  
+  d <- 8
+  n <- 100000
+  sd <- 0.4
+  u <- matrix(rnorm(d*n,mean=0,sd=sd),nrow=n) #Creating d*n randomly generated normally 
+  #distributed values with mean 0 and sd 0,4, where each row has 8 values.
+  prod <- apply(exp(-(u^2)/(2*sd^2))/(sqrt(2*pi)*sd),
+  1,prod) #Using the formula for probability density function of normal distribution, 
+  #and filling in with sd, u and mean 0. We then take the product of each row.
+  sumr <- as.integer(rowSums(abs(u))<1) #If the sum of the absolute value is less than 
+  #one(given c), we get one, else 0. 
+  volume <- (sum(sumr/(prod)))/n #Finding the volume by implementing the Monte Carlo 
+  #estimator given. 
+  x[i] <- volume
+  
+}
+
+2^8/(factorial(8)) #Real volume of V_1
+sd(x)/((2^8)/factorial(8)) #The relative standard deviation of a sample of 10
+sqrt((factorial(8)-1)/10) #The standard deviation of other Monte Carlo estimator with
+#n = 10, found in b).
+
+```
+We find out that the relative standard error is much smaller than the other Monte Carlo estimator, if we use a standard error of $0,4$.
+\
+\
+\
+**Problem 3**\
+*a)*\
+```{r}
+x <- read.table("M3data.txt")$V1
+f1.hat <- function(x){return(density(x, from=1, to=1, n=1)$y)}
+f1.o <- f1.hat(x)
+
+n <- length(x)
+B <- 2000
+boot <- vector(length=B)
+for (i in 1:B){
+  
+  boot[i] <- f1.hat(sample(x,size=n,replace=T))
+  
+}
+hist(boot)
+mean(boot)
+sd(boot)
+
+```
+\
+\
+
+
+
+
+
+
+  
+
+
+
